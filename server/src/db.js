@@ -1,6 +1,12 @@
+
 const { Pool } = require("pg");
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 async function initDb() {
   await pool.query(`
@@ -10,6 +16,7 @@ async function initDb() {
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
     CREATE TABLE IF NOT EXISTS messages (
       id BIGSERIAL PRIMARY KEY,
       sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -20,6 +27,7 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       read_at TIMESTAMPTZ
     );
+
     CREATE INDEX IF NOT EXISTS messages_pair_time_idx
       ON messages (sender_id, recipient_id, created_at);
   `);
